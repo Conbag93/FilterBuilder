@@ -1,0 +1,26 @@
+# Build outputs
+bin/
+obj/
+
+# Rider / VS / VS Code
+.idea/
+.vscode/
+*.user
+*.suo
+.vs/
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local-only directories
+FilterBuilderDemo/
+decompiled/

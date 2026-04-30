@@ -1,0 +1,71 @@
+@typeparam TValue
+@inject IJSRuntime JS
+
+<div class="fb-pill-wrapper">
+    @if (_open)
+    {
+        <div class="fb-overlay" @onclick="Close"></div>
+    }
+    <button @ref="_triggerRef" class="fb-pill @CssClass" @onclick="Toggle" type="button">
+        @if (PillContent is not null)
+        {
+            @PillContent(Value)
+        }
+        else
+        {
+            @Display(Value)
+        }
+        <svg class="fb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+        </svg>
+    </button>
+    @if (_open)
+    {
+        <div class="fb-dropdown-panel" style="@_panelStyle">
+            @foreach (var item in Items)
+            {
+                var captured = item;
+                <button class="fb-dropdown-item @(EqualityComparer<TValue>.Default.Equals(item, Value) ? "fb-dropdown-item--selected" : "")"
+                        type="button"
+                        @onclick="() => Select(captured)">
+                    @Display(captured)
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public TValue Value { get; set; } = default!;
+    [Parameter, EditorRequired] public IReadOnlyList<TValue> Items { get; set; } = Array.Empty<TValue>();
+    [Parameter, EditorRequired] public Func<TValue, string> Display { get; set; } = v => v?.ToString() ?? "";
+    [Parameter, EditorRequired] public EventCallback<TValue> ValueChanged { get; set; }
+    [Parameter] public string CssClass { get; set; } = "";
+    [Parameter] public RenderFragment<TValue>? PillContent { get; set; }
+
+    private bool _open;
+    private string _panelStyle = "";
+    private ElementReference _triggerRef;
+
+    private record Rect(double Top, double Left, double Bottom, double Right, double Width);
+
+    private async Task Toggle()
+    {
+        _open = !_open;
+        if (_open)
+        {
+            var rect = await JS.InvokeAsync<Rect>("FilterBuilder.getRect", _triggerRef);
+            var left = Math.Min(rect.Left, 9999);
+            _panelStyle = $"position:fixed; top:{rect.Bottom + 4}px; left:{left}px; z-index:9999;";
+        }
+    }
+
+    private void Close() => _open = false;
+
+    private async Task Select(TValue item)
+    {
+        _open = false;
+        if (!EqualityComparer<TValue>.Default.Equals(item, Value))
+            await ValueChanged.InvokeAsync(item);
+    }
+}

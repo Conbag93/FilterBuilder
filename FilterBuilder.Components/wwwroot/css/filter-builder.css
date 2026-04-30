@@ -1,0 +1,297 @@
+/* ── Root ──────────────────────────────────────────────────────────────────── */
+
+.fb-root {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 13px;
+    color: #1a1a2e;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    display: inline-block;
+    min-width: 400px;
+}
+
+/* ── Group ───────────────────────────────────────────────────────────────── */
+
+.fb-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.fb-group--root {
+    gap: 0;
+}
+
+.fb-group-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+    min-height: 34px;
+}
+
+/* Tree connector — left bar + horizontal tick for each child */
+.fb-group-children {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-left: 10px;
+    padding-left: 18px;
+    border-left: 2px solid #cbd5e1;
+    margin-top: 4px;
+    padding-bottom: 4px;
+}
+
+.fb-group-children:empty {
+    display: none;
+}
+
+/* ── Node (atom row) ─────────────────────────────────────────────────────── */
+
+.fb-node {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    padding: 3px 0;
+}
+
+/* ── Pill wrapper ────────────────────────────────────────────────────────── */
+
+.fb-pill-wrapper {
+    display: inline-block;
+    position: relative;
+}
+
+/* ── Overlay (click-outside) ─────────────────────────────────────────────── */
+
+.fb-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    background: transparent;
+}
+
+/* ── Pills ───────────────────────────────────────────────────────────────── */
+
+.fb-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px 4px 12px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    transition: filter 0.12s, box-shadow 0.12s;
+    font-family: inherit;
+}
+
+.fb-pill:hover {
+    filter: brightness(0.93);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.fb-pill:active {
+    filter: brightness(0.87);
+}
+
+/* Group op: outlined style like DX's "And" button */
+.fb-pill--group {
+    background: #ebf4ff;
+    color: #1a56db;
+    border-color: #93c5fd;
+    font-weight: 600;
+    min-width: 60px;
+    justify-content: space-between;
+}
+
+/* Field: warm orange */
+.fb-pill--field {
+    background: #fff3ec;
+    color: #c2410c;
+    border-color: #fed7aa;
+}
+
+/* Operator: cool blue */
+.fb-pill--operator {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+}
+
+/* Value: teal/green */
+.fb-pill--value {
+    background: #f0fdf4;
+    color: #166534;
+    border-color: #bbf7d0;
+}
+
+.fb-chevron {
+    width: 11px;
+    height: 11px;
+    opacity: 0.7;
+    flex-shrink: 0;
+}
+
+/* ── Dropdown panel ──────────────────────────────────────────────────────── */
+
+.fb-dropdown-panel {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06);
+    min-width: 150px;
+    overflow: hidden;
+    padding: 4px 0;
+}
+
+.fb-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 14px;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    color: #1a1a2e;
+    white-space: nowrap;
+    transition: background 0.1s;
+}
+
+.fb-dropdown-item:hover {
+    background: #f1f5f9;
+}
+
+.fb-dropdown-item--selected {
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-weight: 600;
+}
+
+.fb-dropdown-item--selected:hover {
+    background: #dbeafe;
+}
+
+/* ── Menu icons (inside add dropdown) ───────────────────────────────────── */
+
+.fb-menu-icon {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
+
+.fb-menu-icon--condition {
+    color: #c2410c;
+}
+
+.fb-menu-icon--group {
+    color: #1a56db;
+}
+
+/* ── Value input ─────────────────────────────────────────────────────────── */
+
+.fb-value-wrapper {
+    display: inline-flex;
+}
+
+.fb-value-input {
+    height: 28px;
+    padding: 3px 10px;
+    border: 1px solid #bbf7d0;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    background: #f0fdf4;
+    color: #166534;
+    font-weight: 500;
+    min-width: 90px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.fb-value-input::placeholder {
+    color: #86efac;
+    font-weight: 400;
+}
+
+.fb-value-input:focus {
+    border-color: #4ade80;
+    box-shadow: 0 0 0 3px rgba(74,222,128,0.2);
+    background: #fff;
+}
+
+/* Number input — remove arrows in webkit */
+.fb-value-input[type="number"]::-webkit-inner-spin-button,
+.fb-value-input[type="number"]::-webkit-outer-spin-button {
+    opacity: 0.4;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+
+.fb-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid transparent;
+    background: none;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: inherit;
+    padding: 4px 9px;
+    line-height: 1;
+    transition: background 0.1s, border-color 0.1s, color 0.1s;
+}
+
+.fb-btn svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.fb-btn--add {
+    background: #f8fafc;
+    color: #475569;
+    border-color: #cbd5e1;
+    font-weight: 500;
+}
+
+.fb-btn--add:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+    color: #1e293b;
+}
+
+.fb-btn--add svg {
+    width: 13px;
+    height: 13px;
+    color: #64748b;
+}
+
+.fb-btn--delete {
+    color: #94a3b8;
+    padding: 4px 6px;
+    border-radius: 4px;
+}
+
+.fb-btn--delete:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+/* ── Empty group nudge ───────────────────────────────────────────────────── */
+
+.fb-group-children:has(> :first-child) {
+    /* has children — keep the border */
+}

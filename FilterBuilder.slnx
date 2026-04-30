@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="FilterBuilder.Components/FilterBuilder.Components.csproj" />
+  <Project Path="FilterBuilder.Sample/FilterBuilder.Sample.csproj" />
+</Solution>

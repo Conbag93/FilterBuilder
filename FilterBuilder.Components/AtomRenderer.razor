@@ -1,0 +1,58 @@
+@using static FilterBuilder.Components.ConditionExtensions
+
+<div class="fb-node fb-node--atom">
+    <PillDropdown TValue="string"
+                  Value="@Node.Field"
+                  Items="@FieldNames"
+                  Display="@(name => Fields.FirstOrDefault(f => f.Name == name)?.Caption ?? name)"
+                  CssClass="fb-pill--field"
+                  ValueChanged="@OnFieldChanged" />
+
+    <PillDropdown TValue="Operator"
+                  Value="@Node.Op"
+                  Items="@ValidOps"
+                  Display="@(op => op.Label())"
+                  CssClass="fb-pill--operator"
+                  ValueChanged="@OnOperatorChanged" />
+
+    @if (Node.Op.NeedsValue() && CurrentField is not null)
+    {
+        <ValueEditor Kind="@CurrentField.Kind"
+                     Value="@Node.Value"
+                     ValueChanged="@OnValueChanged" />
+    }
+
+    <button class="fb-btn fb-btn--delete" type="button" title="Remove condition" @onclick="() => OnDelete.InvokeAsync()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+        </svg>
+    </button>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Condition.Atom Node { get; set; } = null!;
+    [Parameter, EditorRequired] public IReadOnlyList<FieldDef> Fields { get; set; } = Array.Empty<FieldDef>();
+    [Parameter, EditorRequired] public EventCallback<Condition> ConditionChanged { get; set; }
+    [Parameter, EditorRequired] public EventCallback OnDelete { get; set; }
+
+    private IReadOnlyList<string> FieldNames => Fields.Select(f => f.Name).ToArray();
+    private FieldDef? CurrentField => Fields.FirstOrDefault(f => f.Name == Node.Field);
+    private IReadOnlyList<Operator> ValidOps => CurrentField?.Kind.ValidOperators() ?? Array.Empty<Operator>();
+
+    private Task OnFieldChanged(string name)
+    {
+        var field = Fields.FirstOrDefault(f => f.Name == name);
+        var defaultOp = field?.Kind.ValidOperators().FirstOrDefault() ?? Operator.Eq;
+        var defaultVal = defaultOp.NeedsValue() ? field?.Kind.DefaultValue() : null;
+        return ConditionChanged.InvokeAsync(Node with { Field = name, Op = defaultOp, Value = defaultVal });
+    }
+
+    private Task OnOperatorChanged(Operator op)
+    {
+        var value = op.NeedsValue() ? (Node.Value ?? CurrentField?.Kind.DefaultValue()) : null;
+        return ConditionChanged.InvokeAsync(Node with { Op = op, Value = value });
+    }
+
+    private Task OnValueChanged(FactValue val) =>
+        ConditionChanged.InvokeAsync(Node with { Value = val });
+}

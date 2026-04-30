@@ -1,0 +1,15 @@
+@namespace FilterBuilder.Components
+
+<div class="fb-root">
+    <GroupNodeRenderer Node="@Condition"
+                       Fields="@Fields"
+                       IsRoot="true"
+                       ConditionChanged="@(c => ConditionChanged.InvokeAsync(c))"
+                       OnDelete="EventCallback.Empty" />
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Condition Condition { get; set; } = new Condition.All(Array.Empty<Condition>());
+    [Parameter, EditorRequired] public IReadOnlyList<FieldDef> Fields { get; set; } = Array.Empty<FieldDef>();
+    [Parameter] public EventCallback<Condition> ConditionChanged { get; set; }
+}

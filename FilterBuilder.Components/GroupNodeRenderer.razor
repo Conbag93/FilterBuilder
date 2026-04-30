@@ -1,0 +1,143 @@
+@using static FilterBuilder.Components.ConditionExtensions
+@inject IJSRuntime JS
+
+<div class="fb-group @(IsRoot ? "fb-group--root" : "")">
+    <div class="fb-group-header">
+        @* Group operator pill *@
+        <PillDropdown TValue="string"
+                      Value="@Node.GroupLabel()"
+                      Items="@_groupOps"
+                      Display="@(s => s)"
+                      CssClass="fb-pill--group"
+                      ValueChanged="@OnGroupOpChanged" />
+
+        @* Add condition/group *@
+        @if (_addOpen)
+        {
+            <div class="fb-overlay" @onclick="CloseAdd"></div>
+        }
+        <button @ref="_addBtnRef" class="fb-btn fb-btn--add" type="button" @onclick="ToggleAdd">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+            Add
+        </button>
+        @if (_addOpen)
+        {
+            <div class="fb-dropdown-panel" style="@_addPanelStyle">
+                <button class="fb-dropdown-item" type="button" @onclick="AddCondition">
+                    <svg class="fb-menu-icon fb-menu-icon--condition" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+                    </svg>
+                    Add condition
+                </button>
+                <button class="fb-dropdown-item" type="button" @onclick="AddGroup">
+                    <svg class="fb-menu-icon fb-menu-icon--group" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 7.125C2.25 6.504 2.754 6 3.375 6h6c.621 0 1.125.504 1.125 1.125v3.75c0 .621-.504 1.125-1.125 1.125h-6a1.125 1.125 0 01-1.125-1.125v-3.75zM14.25 8.625c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v8.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 01-1.125-1.125v-8.25zM3.75 16.125c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 01-1.125-1.125v-2.25z"/>
+                    </svg>
+                    Add group
+                </button>
+            </div>
+        }
+
+        @* Delete button (hidden for root) *@
+        @if (!IsRoot)
+        {
+            <button class="fb-btn fb-btn--delete" type="button" title="Remove group" @onclick="() => OnDelete.InvokeAsync()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+                </svg>
+            </button>
+        }
+    </div>
+
+    <div class="fb-group-children">
+        @{
+            var children = Node.GroupChildren();
+            for (int i = 0; i < children.Count; i++)
+            {
+                var idx = i;
+                var child = children[idx];
+
+                @if (child is Condition.Atom atom)
+                {
+                    <AtomRenderer Node="@atom"
+                                  Fields="@Fields"
+                                  ConditionChanged="@(c => OnChildChanged(idx, c))"
+                                  OnDelete="@(() => OnChildDeleted(idx))" />
+                }
+                else
+                {
+                    <GroupNodeRenderer Node="@child"
+                                       Fields="@Fields"
+                                       IsRoot="false"
+                                       ConditionChanged="@(c => OnChildChanged(idx, c))"
+                                       OnDelete="@(() => OnChildDeleted(idx))" />
+                }
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Condition Node { get; set; } = null!;
+    [Parameter, EditorRequired] public IReadOnlyList<FieldDef> Fields { get; set; } = Array.Empty<FieldDef>();
+    [Parameter, EditorRequired] public EventCallback<Condition> ConditionChanged { get; set; }
+    [Parameter, EditorRequired] public EventCallback OnDelete { get; set; }
+    [Parameter] public bool IsRoot { get; set; } = false;
+
+    private static readonly IReadOnlyList<string> _groupOps = new[] { "AND", "OR", "NOT" };
+    private bool _addOpen;
+    private string _addPanelStyle = "";
+    private ElementReference _addBtnRef;
+
+    private record Rect(double Top, double Left, double Bottom, double Right, double Width);
+
+    private async Task ToggleAdd()
+    {
+        _addOpen = !_addOpen;
+        if (_addOpen)
+        {
+            var rect = await JS.InvokeAsync<Rect>("FilterBuilder.getRect", _addBtnRef);
+            _addPanelStyle = $"position:fixed; top:{rect.Bottom + 4}px; left:{rect.Left}px; z-index:9999;";
+        }
+    }
+
+    private void CloseAdd() => _addOpen = false;
+
+    private Task OnGroupOpChanged(string op)
+    {
+        var newNode = ConditionExtensions.DefaultGroup(op).WithGroupChildren(Node.GroupChildren());
+        return ConditionChanged.InvokeAsync(newNode);
+    }
+
+    private Task AddCondition()
+    {
+        _addOpen = false;
+        var children = Node.GroupChildren().ToList();
+        children.Add(ConditionExtensions.DefaultAtom(Fields.FirstOrDefault()));
+        return ConditionChanged.InvokeAsync(Node.WithGroupChildren(children));
+    }
+
+    private Task AddGroup()
+    {
+        _addOpen = false;
+        var children = Node.GroupChildren().ToList();
+        children.Add(new Condition.All(Array.Empty<Condition>()));
+        return ConditionChanged.InvokeAsync(Node.WithGroupChildren(children));
+    }
+
+    private Task OnChildChanged(int idx, Condition newChild)
+    {
+        var children = Node.GroupChildren().ToList();
+        children[idx] = newChild;
+        return ConditionChanged.InvokeAsync(Node.WithGroupChildren(children));
+    }
+
+    private Task OnChildDeleted(int idx)
+    {
+        var children = Node.GroupChildren().ToList();
+        children.RemoveAt(idx);
+        return ConditionChanged.InvokeAsync(Node.WithGroupChildren(children));
+    }
+}
