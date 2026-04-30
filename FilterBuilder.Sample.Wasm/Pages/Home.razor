@@ -17,27 +17,39 @@
 @code {
     private static readonly IReadOnlyList<FieldDef> _fields =
     [
-        new FieldDef("Name",     "Name",      FactValueKind.Text),
-        new FieldDef("Category", "Category",  FactValueKind.Text),
-        new FieldDef("Price",    "Price",     FactValueKind.Number),
-        new FieldDef("InStock",  "In Stock",  FactValueKind.Bool),
+        new FieldDef("chartName", "Chart Name", FactValueKind.Text),
+        new FieldDef("amount",    "Amount",     FactValueKind.Number),
+        new FieldDef("date",      "Date",       FactValueKind.Text),
+        new FieldDef("category",  "Category",   FactValueKind.Text),
+        new FieldDef("inStock",   "In Stock",   FactValueKind.Bool),
     ];
 
+    // Seed condition: an AND group with a label (collapsed by default in the UI)
+    // plus a sibling unlabelled condition, to demonstrate the feature.
     private Condition _condition = new Condition.All(
     [
-        new Condition.Atom("Name",  Operator.Contains, new FactValue.Text("widget")),
-        new Condition.Atom("Price", Operator.Lte,      new FactValue.Number(100)),
+        new Condition.All(
+            [
+                new Condition.Atom("chartName", Operator.Eq,  new FactValue.Text("MAIN")),
+                new Condition.Atom("amount",    Operator.Gte, new FactValue.Number(1000)),
+                new Condition.Atom("amount",    Operator.Lte, new FactValue.Number(50000)),
+                new Condition.Atom("date",      Operator.Gte, new FactValue.Text("2026-01-01")),
+                new Condition.Atom("date",      Operator.Lte, new FactValue.Text("2026-04-01")),
+            ]
+        ) { Label = "normal medium-value Q1 spend" },
+        new Condition.Atom("category", Operator.Neq, new FactValue.Text("internal")),
     ]);
 
     private static string Dump(Condition c, int indent = 0)
     {
         var pad = new string(' ', indent * 2);
+        var labelTag = string.IsNullOrEmpty(c.Label) ? "" : $" [{c.Label}]";
         return c switch
         {
-            Condition.Atom a  => $"{pad}Atom({a.Field} {a.Op} {a.Value})",
-            Condition.All all => $"{pad}All[\n{string.Join("\n", all.Children.Select(x => Dump(x, indent + 1)))}\n{pad}]",
-            Condition.Any any => $"{pad}Any[\n{string.Join("\n", any.Children.Select(x => Dump(x, indent + 1)))}\n{pad}]",
-            Condition.Not not => $"{pad}Not(\n{Dump(not.Inner, indent + 1)}\n{pad})",
+            Condition.Atom a  => $"{pad}Atom({a.Field} {a.Op} {a.Value}){labelTag}",
+            Condition.All all => $"{pad}All{labelTag}[\n{string.Join("\n", all.Children.Select(x => Dump(x, indent + 1)))}\n{pad}]",
+            Condition.Any any => $"{pad}Any{labelTag}[\n{string.Join("\n", any.Children.Select(x => Dump(x, indent + 1)))}\n{pad}]",
+            Condition.Not not => $"{pad}Not{labelTag}(\n{Dump(not.Inner, indent + 1)}\n{pad})",
             _                 => $"{pad}{c}",
         };
     }

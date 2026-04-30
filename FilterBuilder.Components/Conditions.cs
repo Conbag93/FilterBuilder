@@ -24,6 +24,10 @@ public abstract record FactValue
 
 public abstract record Condition
 {
+    /// Human-readable name for this node. When set, the node renders as a collapsed pill;
+    /// clicking the chevron expands the detail view. Null means no label (normal rendering).
+    public string? Label { get; init; }
+
     public sealed record Atom(string Field, Operator Op, FactValue? Value = null) : Condition;
     public sealed record All(IReadOnlyList<Condition> Children) : Condition;
     public sealed record Any(IReadOnlyList<Condition> Children) : Condition;
@@ -95,10 +99,11 @@ public static class ConditionExtensions
     public static Condition WithGroupChildren(this Condition condition, IReadOnlyList<Condition> children) =>
         condition switch
         {
-            Condition.All => new Condition.All(children),
-            Condition.Any => new Condition.Any(children),
-            Condition.Not => children.Count > 0 ? new Condition.Not(children[0]) : new Condition.Not(DefaultAtom()),
-            _             => new Condition.All(children),
+            Condition.All => new Condition.All(children) with { Label = condition.Label },
+            Condition.Any => new Condition.Any(children) with { Label = condition.Label },
+            Condition.Not => (children.Count > 0 ? new Condition.Not(children[0]) : new Condition.Not(DefaultAtom()))
+                             with { Label = condition.Label },
+            _             => new Condition.All(children) with { Label = condition.Label },
         };
 
     public static Condition DefaultGroup(string op) => op switch

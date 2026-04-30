@@ -358,3 +358,136 @@
     border-radius: 50%;
     background: #7c3aed;
 }
+
+/* ── Label pill ──────────────────────────────────────────────────────────── */
+
+/* Amber/gold — distinct from field (warm amber) and group (violet) */
+.fb-pill--label {
+    background: #fefce8;
+    color: #854d0e;
+    border-color: #fde047;
+    font-weight: 600;
+    max-width: 320px;
+    justify-content: space-between;
+}
+
+/* ── Label input (inline edit for node names) ────────────────────────────── */
+
+.fb-label-input {
+    height: 28px;
+    padding: 3px 10px;
+    border: 1px solid #fde047;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: inherit;
+    font-weight: 500;
+    outline: none;
+    background: #fefce8;
+    color: #854d0e;
+    min-width: 160px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.fb-label-input::placeholder {
+    color: #ca8a04;
+    font-weight: 400;
+}
+
+.fb-label-input:focus {
+    border-color: #eab308;
+    box-shadow: 0 0 0 3px rgba(234,179,8,0.18);
+    background: #fff;
+}
+
+/* ── Label action buttons ────────────────────────────────────────────────── */
+
+/* Tag/pencil icon button — shown on hover in unlabelled nodes */
+.fb-btn--label {
+    color: #a8a29e;
+    padding: 4px 6px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: opacity 0.1s, background 0.1s, color 0.1s;
+}
+
+.fb-node:hover .fb-btn--label,
+.fb-group-header:hover .fb-btn--label {
+    opacity: 1;
+}
+
+.fb-btn--label:hover {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+/* When label-set button is shown on unlabelled atoms keep it always visible on hover */
+.fb-btn--label-set {
+    opacity: 0;
+}
+
+.fb-node:hover .fb-btn--label-set {
+    opacity: 1;
+}
+
+/* Commit (✓) button */
+.fb-btn--label-commit {
+    color: #15803d;
+    padding: 4px 6px;
+    border-radius: 4px;
+}
+
+.fb-btn--label-commit:hover {
+    background: #dcfce7;
+    color: #166534;
+}
+
+/* Cancel (✗) button */
+.fb-btn--label-cancel {
+    color: #a8a29e;
+    padding: 4px 6px;
+    border-radius: 4px;
+}
+
+.fb-btn--label-cancel:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* ── Inner header (group op + add, shown below label pill when expanded) ─── */
+
+.fb-group-inner-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0 4px 10px;
+    min-height: 34px;
+    border-left: 2px solid #fde047;
+    margin-left: 10px;
+    margin-top: 2px;
+}
+
+/* ── Atom content row (detail shown when labelled atom is expanded) ────────── */
+
+/* flex-basis:100% pushes this onto its own line within the wrapping fb-node flex */
+.fb-atom-content {
+    flex-basis: 100%;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    padding: 3px 0 3px 10px;
+    border-left: 2px solid #fde047;
+    margin-left: 10px;
+}
+
+/* ── Set-label menu item ─────────────────────────────────────────────────── */
+
+.fb-menu-icon--label {
+    color: #854d0e;
+}
+
+.fb-dropdown-item--label {
+    border-top: 1px solid #f5f5f4;
+    margin-top: 2px;
+    padding-top: 8px;
+}

@@ -55,3 +55,17 @@ And before `</body>`:
 > **Blazor Server / interactive render mode** — add `@rendermode InteractiveServer` to the page or component.
 
 No DI registration required.
+
+### Optional node labels
+
+Any node can be given a human-readable name via the `Label` property. A labelled node renders as a collapsed pill; clicking the chevron expands the full detail view. Labels round-trip through `JsonSerializer` with no extra setup.
+
+```csharp
+private Condition _condition = new Condition.All(
+[
+    new Condition.All([ /* … */ ]) { Label = "normal medium-value Q1 spend" },
+    new Condition.Atom("category", Operator.Neq, new FactValue.Text("internal")),
+]);
+```
+
+To set a label interactively: open the `+` menu on any group and choose **Set label**, or hover an atom row and click the tag icon.

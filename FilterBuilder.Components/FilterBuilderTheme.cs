@@ -23,6 +23,8 @@ public record FilterBuilderTheme
     public string? FieldPillClass { get; init; }
     public string? OperatorPillClass { get; init; }
     public string? ValuePillClass { get; init; }
+    /// Replaces <c>fb-pill--label</c> on the label collapse/expand pill when set.
+    public string? LabelPillClass { get; init; }
 
     // ── Value input ───────────────────────────────────────────────────────────
 

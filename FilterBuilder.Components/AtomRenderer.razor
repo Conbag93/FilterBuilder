@@ -1,6 +1,10 @@
 @using static FilterBuilder.Components.ConditionExtensions
 
-<div class="fb-node fb-node--atom"
+@{
+    bool hasLabel = !string.IsNullOrEmpty(Node.Label);
+}
+
+<div class="fb-node fb-node--atom @(hasLabel ? "fb-node--labeled" : "")"
      draggable="true"
      data-fb-group-path="@GroupPathJson"
      data-fb-index="@NodeIndex">
@@ -23,39 +27,159 @@
         }
     </span>
 
-    <PillDropdown TValue="string"
-                  Value="@Node.Field"
-                  Items="@FieldNames"
-                  Display="@(name => Fields.FirstOrDefault(f => f.Name == name)?.Caption ?? name)"
-                  CssClass="@(Theme.FieldPillClass ?? "fb-pill--field")"
-                  ValueChanged="@OnFieldChanged" />
-
-    <PillDropdown TValue="Operator"
-                  Value="@Node.Op"
-                  Items="@ValidOps"
-                  Display="@(op => op.Label())"
-                  CssClass="@(Theme.OperatorPillClass ?? "fb-pill--operator")"
-                  ValueChanged="@OnOperatorChanged" />
-
-    @if (Node.Op.NeedsValue() && CurrentField is not null)
+    @if (hasLabel)
     {
-        <ValueEditor Kind="@CurrentField.Kind"
-                     Value="@Node.Value"
-                     ValueChanged="@OnValueChanged" />
-    }
-
-    <button class="fb-btn @(Theme.DeleteButtonClass ?? "fb-btn--delete")" type="button" title="Remove condition" @onclick="() => OnDelete.InvokeAsync()">
-        @if (Theme.DeleteIcon is not null)
+        @* ── Labelled: pill row with expand chevron ── *@
+        @if (_editingLabel)
         {
-            <span class="@Theme.DeleteIcon"></span>
+            <input class="fb-label-input"
+                   value="@_labelDraft"
+                   placeholder="Label…"
+                   @oninput="@(e => _labelDraft = e.Value?.ToString() ?? "")"
+                   @onkeydown="OnLabelKeyDown" />
+            <button type="button" class="fb-btn fb-btn--label-commit" title="Save label" @onclick="CommitLabel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                </svg>
+            </button>
+            <button type="button" class="fb-btn fb-btn--label-cancel" title="Cancel" @onclick="CancelLabel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
         }
         else
         {
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
-            </svg>
+            <button class="fb-pill @(Theme.LabelPillClass ?? "fb-pill--label")"
+                    type="button"
+                    title="@(_labelExpanded ? "Collapse" : "Expand")"
+                    @onclick="ToggleLabelExpanded">
+                @Node.Label
+                @if (_labelExpanded)
+                {
+                    <svg class="fb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+                    </svg>
+                }
+                else
+                {
+                    <svg class="fb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+                    </svg>
+                }
+            </button>
+            <button type="button" class="fb-btn fb-btn--label" title="Edit label" @onclick="StartEditLabel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"/>
+                </svg>
+            </button>
         }
-    </button>
+
+        <button class="fb-btn @(Theme.DeleteButtonClass ?? "fb-btn--delete")" type="button" title="Remove condition" @onclick="() => OnDelete.InvokeAsync()">
+            @if (Theme.DeleteIcon is not null)
+            {
+                <span class="@Theme.DeleteIcon"></span>
+            }
+            else
+            {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+                </svg>
+            }
+        </button>
+
+        @* Detail row shown when expanded — takes full width via flex-basis *@
+        @if (_labelExpanded)
+        {
+            <div class="fb-atom-content">
+                <PillDropdown TValue="string"
+                              Value="@Node.Field"
+                              Items="@FieldNames"
+                              Display="@(name => Fields.FirstOrDefault(f => f.Name == name)?.Caption ?? name)"
+                              CssClass="@(Theme.FieldPillClass ?? "fb-pill--field")"
+                              ValueChanged="@OnFieldChanged" />
+
+                <PillDropdown TValue="Operator"
+                              Value="@Node.Op"
+                              Items="@ValidOps"
+                              Display="@(op => op.Label())"
+                              CssClass="@(Theme.OperatorPillClass ?? "fb-pill--operator")"
+                              ValueChanged="@OnOperatorChanged" />
+
+                @if (Node.Op.NeedsValue() && CurrentField is not null)
+                {
+                    <ValueEditor Kind="@CurrentField.Kind"
+                                 Value="@Node.Value"
+                                 ValueChanged="@OnValueChanged" />
+                }
+            </div>
+        }
+    }
+    else
+    {
+        @* ── Normal (no label) ── *@
+        <PillDropdown TValue="string"
+                      Value="@Node.Field"
+                      Items="@FieldNames"
+                      Display="@(name => Fields.FirstOrDefault(f => f.Name == name)?.Caption ?? name)"
+                      CssClass="@(Theme.FieldPillClass ?? "fb-pill--field")"
+                      ValueChanged="@OnFieldChanged" />
+
+        <PillDropdown TValue="Operator"
+                      Value="@Node.Op"
+                      Items="@ValidOps"
+                      Display="@(op => op.Label())"
+                      CssClass="@(Theme.OperatorPillClass ?? "fb-pill--operator")"
+                      ValueChanged="@OnOperatorChanged" />
+
+        @if (Node.Op.NeedsValue() && CurrentField is not null)
+        {
+            <ValueEditor Kind="@CurrentField.Kind"
+                         Value="@Node.Value"
+                         ValueChanged="@OnValueChanged" />
+        }
+
+        @if (_editingLabel)
+        {
+            <input class="fb-label-input"
+                   value="@_labelDraft"
+                   placeholder="Label…"
+                   @oninput="@(e => _labelDraft = e.Value?.ToString() ?? "")"
+                   @onkeydown="OnLabelKeyDown" />
+            <button type="button" class="fb-btn fb-btn--label-commit" title="Save label" @onclick="CommitLabel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                </svg>
+            </button>
+            <button type="button" class="fb-btn fb-btn--label-cancel" title="Cancel" @onclick="CancelLabel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        }
+        else
+        {
+            <button type="button" class="fb-btn fb-btn--label fb-btn--label-set" title="Set label" @onclick="StartEditLabel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L9.568 3z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/>
+                </svg>
+            </button>
+        }
+
+        <button class="fb-btn @(Theme.DeleteButtonClass ?? "fb-btn--delete")" type="button" title="Remove condition" @onclick="() => OnDelete.InvokeAsync()">
+            @if (Theme.DeleteIcon is not null)
+            {
+                <span class="@Theme.DeleteIcon"></span>
+            }
+            else
+            {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+                </svg>
+            }
+        </button>
+    }
 </div>
 
 @code {
@@ -78,6 +202,10 @@
     private FieldDef? CurrentField => Fields.FirstOrDefault(f => f.Name == Node.Field);
     private IReadOnlyList<Operator> ValidOps => CurrentField?.Kind.ValidOperators() ?? Array.Empty<Operator>();
 
+    private bool _labelExpanded;
+    private bool _editingLabel;
+    private string _labelDraft = "";
+
     private Task OnFieldChanged(string name)
     {
         var field = Fields.FirstOrDefault(f => f.Name == name);
@@ -94,4 +222,33 @@
 
     private Task OnValueChanged(FactValue val) =>
         ConditionChanged.InvokeAsync(Node with { Value = val });
+
+    private void ToggleLabelExpanded() => _labelExpanded = !_labelExpanded;
+
+    private void StartEditLabel()
+    {
+        _labelDraft = Node.Label ?? "";
+        _editingLabel = true;
+    }
+
+    private async Task CommitLabel()
+    {
+        _editingLabel = false;
+        var newLabel = string.IsNullOrWhiteSpace(_labelDraft) ? null : _labelDraft.Trim();
+        _labelExpanded = newLabel is not null;
+        if (newLabel != Node.Label)
+            await ConditionChanged.InvokeAsync(Node with { Label = newLabel });
+    }
+
+    private void CancelLabel()
+    {
+        _editingLabel = false;
+        _labelDraft = Node.Label ?? "";
+    }
+
+    private async Task OnLabelKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await CommitLabel();
+        else if (e.Key == "Escape") CancelLabel();
+    }
 }

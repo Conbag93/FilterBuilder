@@ -1,6 +1,10 @@
 @using static FilterBuilder.Components.ConditionExtensions
 @inject IJSRuntime JS
 
+@{
+    bool hasLabel = !string.IsNullOrEmpty(Node.Label);
+}
+
 <div class="fb-group @(IsRoot ? "fb-group--root" : "")">
     <div class="fb-group-header"
          draggable="@(IsRoot ? "false" : "true")"
@@ -28,110 +32,269 @@
             </span>
         }
 
-        <PillDropdown TValue="string"
-                      Value="@Node.GroupLabel()"
-                      Items="@_groupOps"
-                      Display="@(s => s)"
-                      CssClass="@(Theme.GroupPillClass ?? "fb-pill--group")"
-                      ValueChanged="@OnGroupOpChanged" />
-
-        @if (_addOpen)
+        @if (hasLabel)
         {
-            <div class="fb-overlay" @onclick="CloseAdd"></div>
-        }
-        <button @ref="_addBtnRef" class="fb-btn @(Theme.AddButtonClass ?? "fb-btn--add")" type="button" @onclick="ToggleAdd">
-            @if (Theme.AddIcon is not null)
+            @* ── Labelled header ── *@
+            @if (_editingLabel)
             {
-                <span class="@Theme.AddIcon"></span>
+                <input class="fb-label-input"
+                       value="@_labelDraft"
+                       placeholder="Label…"
+                       @oninput="@(e => _labelDraft = e.Value?.ToString() ?? "")"
+                       @onkeydown="OnLabelKeyDown" />
+                <button type="button" class="fb-btn fb-btn--label-commit" title="Save label" @onclick="CommitLabel">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                    </svg>
+                </button>
+                <button type="button" class="fb-btn fb-btn--label-cancel" title="Cancel" @onclick="CancelLabel">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
             }
             else
             {
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
-                </svg>
+                <button class="fb-pill @(Theme.LabelPillClass ?? "fb-pill--label")"
+                        type="button"
+                        title="@(_labelExpanded ? "Collapse" : "Expand")"
+                        @onclick="ToggleLabelExpanded">
+                    @Node.Label
+                    @if (_labelExpanded)
+                    {
+                        <svg class="fb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+                        </svg>
+                    }
+                    else
+                    {
+                        <svg class="fb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+                        </svg>
+                    }
+                </button>
+                <button type="button" class="fb-btn fb-btn--label" title="Edit label" @onclick="StartEditLabel">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"/>
+                    </svg>
+                </button>
             }
-            Add
-        </button>
-        @if (_addOpen)
-        {
-            <div class="@(Theme.DropdownPanelClass ?? "fb-dropdown-panel")" style="@_addPanelStyle">
-                <button class="@(Theme.DropdownItemClass ?? "fb-dropdown-item")" type="button" @onclick="AddCondition">
-                    @if (Theme.ConditionMenuIcon is not null)
-                    {
-                        <span class="@Theme.ConditionMenuIcon"></span>
-                    }
-                    else
-                    {
-                        <svg class="fb-menu-icon fb-menu-icon--condition" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
-                        </svg>
-                    }
-                    Add condition
-                </button>
-                <button class="@(Theme.DropdownItemClass ?? "fb-dropdown-item")" type="button" @onclick="AddGroup">
-                    @if (Theme.GroupMenuIcon is not null)
-                    {
-                        <span class="@Theme.GroupMenuIcon"></span>
-                    }
-                    else
-                    {
-                        <svg class="fb-menu-icon fb-menu-icon--group" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 7.125C2.25 6.504 2.754 6 3.375 6h6c.621 0 1.125.504 1.125 1.125v3.75c0 .621-.504 1.125-1.125 1.125h-6a1.125 1.125 0 01-1.125-1.125v-3.75zM14.25 8.625c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v8.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 01-1.125-1.125v-8.25zM3.75 16.125c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 01-1.125-1.125v-2.25z"/>
-                        </svg>
-                    }
-                    Add group
-                </button>
-            </div>
-        }
 
-        @if (!IsRoot)
+            @if (!IsRoot)
+            {
+                <button class="fb-btn @(Theme.DeleteButtonClass ?? "fb-btn--delete")" type="button" title="Remove group" @onclick="() => OnDelete.InvokeAsync()">
+                    @if (Theme.DeleteIcon is not null)
+                    {
+                        <span class="@Theme.DeleteIcon"></span>
+                    }
+                    else
+                    {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+                        </svg>
+                    }
+                </button>
+            }
+        }
+        else
         {
-            <button class="fb-btn @(Theme.DeleteButtonClass ?? "fb-btn--delete")" type="button" title="Remove group" @onclick="() => OnDelete.InvokeAsync()">
-                @if (Theme.DeleteIcon is not null)
+            @* ── Normal header ── *@
+            <PillDropdown TValue="string"
+                          Value="@Node.GroupLabel()"
+                          Items="@_groupOps"
+                          Display="@(s => s)"
+                          CssClass="@(Theme.GroupPillClass ?? "fb-pill--group")"
+                          ValueChanged="@OnGroupOpChanged" />
+
+            @if (_addOpen)
+            {
+                <div class="fb-overlay" @onclick="CloseAdd"></div>
+            }
+            <button @ref="_addBtnRef" class="fb-btn @(Theme.AddButtonClass ?? "fb-btn--add")" type="button" @onclick="ToggleAdd">
+                @if (Theme.AddIcon is not null)
                 {
-                    <span class="@Theme.DeleteIcon"></span>
+                    <span class="@Theme.AddIcon"></span>
                 }
                 else
                 {
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                     </svg>
                 }
+                Add
             </button>
-        }
-    </div>
-
-    <div class="fb-group-children">
-        @{
-            var children = Node.GroupChildren();
-            for (int i = 0; i < children.Count; i++)
+            @if (_addOpen)
             {
-                var idx = i;
-                var child = children[idx];
+                <div class="@(Theme.DropdownPanelClass ?? "fb-dropdown-panel")" style="@_addPanelStyle">
+                    <button class="@(Theme.DropdownItemClass ?? "fb-dropdown-item")" type="button" @onclick="AddCondition">
+                        @if (Theme.ConditionMenuIcon is not null)
+                        {
+                            <span class="@Theme.ConditionMenuIcon"></span>
+                        }
+                        else
+                        {
+                            <svg class="fb-menu-icon fb-menu-icon--condition" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+                            </svg>
+                        }
+                        Add condition
+                    </button>
+                    <button class="@(Theme.DropdownItemClass ?? "fb-dropdown-item")" type="button" @onclick="AddGroup">
+                        @if (Theme.GroupMenuIcon is not null)
+                        {
+                            <span class="@Theme.GroupMenuIcon"></span>
+                        }
+                        else
+                        {
+                            <svg class="fb-menu-icon fb-menu-icon--group" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 7.125C2.25 6.504 2.754 6 3.375 6h6c.621 0 1.125.504 1.125 1.125v3.75c0 .621-.504 1.125-1.125 1.125h-6a1.125 1.125 0 01-1.125-1.125v-3.75zM14.25 8.625c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v8.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 01-1.125-1.125v-8.25zM3.75 16.125c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 01-1.125-1.125v-2.25z"/>
+                            </svg>
+                        }
+                        Add group
+                    </button>
+                    <button class="@(Theme.DropdownItemClass ?? "fb-dropdown-item") fb-dropdown-item--label" type="button" @onclick="StartEditLabel">
+                        <svg class="fb-menu-icon fb-menu-icon--label" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L9.568 3z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/>
+                        </svg>
+                        Set label
+                    </button>
+                </div>
+            }
 
-                @if (child is Condition.Atom atom)
-                {
-                    <AtomRenderer Node="@atom"
-                                  Fields="@Fields"
-                                  GroupPath="@Path"
-                                  NodeIndex="@idx"
-                                  ConditionChanged="@(c => OnChildChanged(idx, c))"
-                                  OnDelete="@(() => OnChildDeleted(idx))" />
-                }
-                else
-                {
-                    <GroupNodeRenderer Node="@child"
-                                       Fields="@Fields"
-                                       IsRoot="false"
-                                       Path="@(Path.Concat(new[] { idx }).ToArray())"
-                                       NodeIndex="@idx"
-                                       ParentGroupPath="@Path"
-                                       ConditionChanged="@(c => OnChildChanged(idx, c))"
-                                       OnDelete="@(() => OnChildDeleted(idx))" />
-                }
+            @if (_editingLabel)
+            {
+                <input class="fb-label-input"
+                       value="@_labelDraft"
+                       placeholder="Label…"
+                       @oninput="@(e => _labelDraft = e.Value?.ToString() ?? "")"
+                       @onkeydown="OnLabelKeyDown" />
+                <button type="button" class="fb-btn fb-btn--label-commit" title="Save label" @onclick="CommitLabel">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                    </svg>
+                </button>
+                <button type="button" class="fb-btn fb-btn--label-cancel" title="Cancel" @onclick="CancelLabel">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            }
+
+            @if (!IsRoot)
+            {
+                <button class="fb-btn @(Theme.DeleteButtonClass ?? "fb-btn--delete")" type="button" title="Remove group" @onclick="() => OnDelete.InvokeAsync()">
+                    @if (Theme.DeleteIcon is not null)
+                    {
+                        <span class="@Theme.DeleteIcon"></span>
+                    }
+                    else
+                    {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+                        </svg>
+                    }
+                </button>
             }
         }
     </div>
+
+    @* When the group has a label and is expanded, show the group-op + add controls as an inner header *@
+    @if (hasLabel && _labelExpanded)
+    {
+        <div class="fb-group-inner-header">
+            <PillDropdown TValue="string"
+                          Value="@Node.GroupLabel()"
+                          Items="@_groupOps"
+                          Display="@(s => s)"
+                          CssClass="@(Theme.GroupPillClass ?? "fb-pill--group")"
+                          ValueChanged="@OnGroupOpChanged" />
+
+            @if (_addOpen)
+            {
+                <div class="fb-overlay" @onclick="CloseAdd"></div>
+            }
+            <button @ref="_addBtnRef" class="fb-btn @(Theme.AddButtonClass ?? "fb-btn--add")" type="button" @onclick="ToggleAdd">
+                @if (Theme.AddIcon is not null)
+                {
+                    <span class="@Theme.AddIcon"></span>
+                }
+                else
+                {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                    </svg>
+                }
+                Add
+            </button>
+            @if (_addOpen)
+            {
+                <div class="@(Theme.DropdownPanelClass ?? "fb-dropdown-panel")" style="@_addPanelStyle">
+                    <button class="@(Theme.DropdownItemClass ?? "fb-dropdown-item")" type="button" @onclick="AddCondition">
+                        @if (Theme.ConditionMenuIcon is not null)
+                        {
+                            <span class="@Theme.ConditionMenuIcon"></span>
+                        }
+                        else
+                        {
+                            <svg class="fb-menu-icon fb-menu-icon--condition" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+                            </svg>
+                        }
+                        Add condition
+                    </button>
+                    <button class="@(Theme.DropdownItemClass ?? "fb-dropdown-item")" type="button" @onclick="AddGroup">
+                        @if (Theme.GroupMenuIcon is not null)
+                        {
+                            <span class="@Theme.GroupMenuIcon"></span>
+                        }
+                        else
+                        {
+                            <svg class="fb-menu-icon fb-menu-icon--group" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 7.125C2.25 6.504 2.754 6 3.375 6h6c.621 0 1.125.504 1.125 1.125v3.75c0 .621-.504 1.125-1.125 1.125h-6a1.125 1.125 0 01-1.125-1.125v-3.75zM14.25 8.625c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v8.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 01-1.125-1.125v-8.25zM3.75 16.125c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 01-1.125-1.125v-2.25z"/>
+                            </svg>
+                        }
+                        Add group
+                    </button>
+                </div>
+            }
+        </div>
+    }
+
+    @if (!hasLabel || _labelExpanded)
+    {
+        <div class="fb-group-children">
+            @{
+                var children = Node.GroupChildren();
+                for (int i = 0; i < children.Count; i++)
+                {
+                    var idx = i;
+                    var child = children[idx];
+
+                    @if (child is Condition.Atom atom)
+                    {
+                        <AtomRenderer Node="@atom"
+                                      Fields="@Fields"
+                                      GroupPath="@Path"
+                                      NodeIndex="@idx"
+                                      ConditionChanged="@(c => OnChildChanged(idx, c))"
+                                      OnDelete="@(() => OnChildDeleted(idx))" />
+                    }
+                    else
+                    {
+                        <GroupNodeRenderer Node="@child"
+                                           Fields="@Fields"
+                                           IsRoot="false"
+                                           Path="@(Path.Concat(new[] { idx }).ToArray())"
+                                           NodeIndex="@idx"
+                                           ParentGroupPath="@Path"
+                                           ConditionChanged="@(c => OnChildChanged(idx, c))"
+                                           OnDelete="@(() => OnChildDeleted(idx))" />
+                    }
+                }
+            }
+        </div>
+    }
 </div>
 
 @code {
@@ -159,6 +322,10 @@
     private string _addPanelStyle = "";
     private ElementReference _addBtnRef;
 
+    private bool _labelExpanded;
+    private bool _editingLabel;
+    private string _labelDraft = "";
+
     private record Rect(double Top, double Left, double Bottom, double Right, double Width);
 
     private async Task ToggleAdd()
@@ -175,7 +342,8 @@
 
     private Task OnGroupOpChanged(string op)
     {
-        var newNode = ConditionExtensions.DefaultGroup(op).WithGroupChildren(Node.GroupChildren());
+        var newNode = ConditionExtensions.DefaultGroup(op)
+            .WithGroupChildren(Node.GroupChildren()) with { Label = Node.Label };
         return ConditionChanged.InvokeAsync(newNode);
     }
 
@@ -207,5 +375,37 @@
         var children = Node.GroupChildren().ToList();
         children.RemoveAt(idx);
         return ConditionChanged.InvokeAsync(Node.WithGroupChildren(children));
+    }
+
+    private void ToggleLabelExpanded() => _labelExpanded = !_labelExpanded;
+
+    private void StartEditLabel()
+    {
+        _addOpen = false;
+        _labelDraft = Node.Label ?? "";
+        _editingLabel = true;
+        if (!string.IsNullOrEmpty(Node.Label))
+            _labelExpanded = true;
+    }
+
+    private async Task CommitLabel()
+    {
+        _editingLabel = false;
+        var newLabel = string.IsNullOrWhiteSpace(_labelDraft) ? null : _labelDraft.Trim();
+        _labelExpanded = newLabel is not null;
+        if (newLabel != Node.Label)
+            await ConditionChanged.InvokeAsync(Node with { Label = newLabel });
+    }
+
+    private void CancelLabel()
+    {
+        _editingLabel = false;
+        _labelDraft = Node.Label ?? "";
+    }
+
+    private async Task OnLabelKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await CommitLabel();
+        else if (e.Key == "Escape") CancelLabel();
     }
 }

@@ -8,7 +8,7 @@
 
     <!-- NuGet package metadata -->
     <PackageId>FilterBuilder.Components</PackageId>
-    <Version>0.0.1</Version>
+    <Version>0.1.0</Version>
     <Authors>Conbag93</Authors>
     <Description>A Blazor filter/condition builder component with no external UI dependencies. Supports drag-and-drop reordering, custom themes, and extensible field/operator/value types.</Description>
     <PackageProjectUrl>https://github.com/Conbag93/FilterBuilder</PackageProjectUrl>
