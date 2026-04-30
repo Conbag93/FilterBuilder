@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
 <a name="0.1.0"></a>
+## [0.1.0](https://www.github.com/Conbag93/FilterBuilder/releases/tag/v0.1.0) (2026-04-30)
+
+### Features
+
+* add optional node labels with collapse/expand UX (v0.1.0) ([a1de0c4](https://www.github.com/Conbag93/FilterBuilder/commit/a1de0c4fdaf137bf9b3935e4f9f0ddaac32531f0))
+
+<a name="0.1.0"></a>
 ## [0.1.0] (2026-04-30)
 
 ### Features
