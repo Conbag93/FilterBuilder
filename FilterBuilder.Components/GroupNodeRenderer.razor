@@ -2,7 +2,6 @@
 @inject IJSRuntime JS
 
 <div class="fb-group @(IsRoot ? "fb-group--root" : "")">
-    @* Group header — draggable for non-root groups *@
     <div class="fb-group-header"
          draggable="@(IsRoot ? "false" : "true")"
          data-fb-group-path="@ParentGroupPathJson"
@@ -11,61 +10,93 @@
         @if (!IsRoot)
         {
             <span class="fb-drag-handle" title="Drag to reorder">
-                <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
-                    <circle cx="3" cy="2.5" r="1.5"/>
-                    <circle cx="7" cy="2.5" r="1.5"/>
-                    <circle cx="3" cy="7" r="1.5"/>
-                    <circle cx="7" cy="7" r="1.5"/>
-                    <circle cx="3" cy="11.5" r="1.5"/>
-                    <circle cx="7" cy="11.5" r="1.5"/>
-                </svg>
+                @if (Theme.DragHandleIcon is not null)
+                {
+                    <span class="@Theme.DragHandleIcon"></span>
+                }
+                else
+                {
+                    <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+                        <circle cx="3" cy="2.5" r="1.5"/>
+                        <circle cx="7" cy="2.5" r="1.5"/>
+                        <circle cx="3" cy="7" r="1.5"/>
+                        <circle cx="7" cy="7" r="1.5"/>
+                        <circle cx="3" cy="11.5" r="1.5"/>
+                        <circle cx="7" cy="11.5" r="1.5"/>
+                    </svg>
+                }
             </span>
         }
 
-        @* Group operator pill *@
         <PillDropdown TValue="string"
                       Value="@Node.GroupLabel()"
                       Items="@_groupOps"
                       Display="@(s => s)"
-                      CssClass="fb-pill--group"
+                      CssClass="@(Theme.GroupPillClass ?? "fb-pill--group")"
                       ValueChanged="@OnGroupOpChanged" />
 
-        @* Add condition/group *@
         @if (_addOpen)
         {
             <div class="fb-overlay" @onclick="CloseAdd"></div>
         }
-        <button @ref="_addBtnRef" class="fb-btn fb-btn--add" type="button" @onclick="ToggleAdd">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
-            </svg>
+        <button @ref="_addBtnRef" class="fb-btn @(Theme.AddButtonClass ?? "fb-btn--add")" type="button" @onclick="ToggleAdd">
+            @if (Theme.AddIcon is not null)
+            {
+                <span class="@Theme.AddIcon"></span>
+            }
+            else
+            {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                </svg>
+            }
             Add
         </button>
         @if (_addOpen)
         {
-            <div class="fb-dropdown-panel" style="@_addPanelStyle">
-                <button class="fb-dropdown-item" type="button" @onclick="AddCondition">
-                    <svg class="fb-menu-icon fb-menu-icon--condition" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
-                    </svg>
+            <div class="@(Theme.DropdownPanelClass ?? "fb-dropdown-panel")" style="@_addPanelStyle">
+                <button class="@(Theme.DropdownItemClass ?? "fb-dropdown-item")" type="button" @onclick="AddCondition">
+                    @if (Theme.ConditionMenuIcon is not null)
+                    {
+                        <span class="@Theme.ConditionMenuIcon"></span>
+                    }
+                    else
+                    {
+                        <svg class="fb-menu-icon fb-menu-icon--condition" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+                        </svg>
+                    }
                     Add condition
                 </button>
-                <button class="fb-dropdown-item" type="button" @onclick="AddGroup">
-                    <svg class="fb-menu-icon fb-menu-icon--group" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 7.125C2.25 6.504 2.754 6 3.375 6h6c.621 0 1.125.504 1.125 1.125v3.75c0 .621-.504 1.125-1.125 1.125h-6a1.125 1.125 0 01-1.125-1.125v-3.75zM14.25 8.625c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v8.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 01-1.125-1.125v-8.25zM3.75 16.125c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 01-1.125-1.125v-2.25z"/>
-                    </svg>
+                <button class="@(Theme.DropdownItemClass ?? "fb-dropdown-item")" type="button" @onclick="AddGroup">
+                    @if (Theme.GroupMenuIcon is not null)
+                    {
+                        <span class="@Theme.GroupMenuIcon"></span>
+                    }
+                    else
+                    {
+                        <svg class="fb-menu-icon fb-menu-icon--group" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 7.125C2.25 6.504 2.754 6 3.375 6h6c.621 0 1.125.504 1.125 1.125v3.75c0 .621-.504 1.125-1.125 1.125h-6a1.125 1.125 0 01-1.125-1.125v-3.75zM14.25 8.625c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v8.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 01-1.125-1.125v-8.25zM3.75 16.125c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 01-1.125-1.125v-2.25z"/>
+                        </svg>
+                    }
                     Add group
                 </button>
             </div>
         }
 
-        @* Delete button (hidden for root) *@
         @if (!IsRoot)
         {
-            <button class="fb-btn fb-btn--delete" type="button" title="Remove group" @onclick="() => OnDelete.InvokeAsync()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
-                </svg>
+            <button class="fb-btn @(Theme.DeleteButtonClass ?? "fb-btn--delete")" type="button" title="Remove group" @onclick="() => OnDelete.InvokeAsync()">
+                @if (Theme.DeleteIcon is not null)
+                {
+                    <span class="@Theme.DeleteIcon"></span>
+                }
+                else
+                {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+                    </svg>
+                }
             </button>
         }
     </div>
@@ -104,6 +135,8 @@
 </div>
 
 @code {
+    [CascadingParameter] public FilterBuilderTheme Theme { get; set; } = FilterBuilderTheme.Default;
+
     [Parameter, EditorRequired] public Condition Node { get; set; } = null!;
     [Parameter, EditorRequired] public IReadOnlyList<FieldDef> Fields { get; set; } = Array.Empty<FieldDef>();
     [Parameter, EditorRequired] public EventCallback<Condition> ConditionChanged { get; set; }

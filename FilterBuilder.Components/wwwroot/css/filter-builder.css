@@ -3,10 +3,10 @@
 .fb-root {
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
     font-size: 13px;
-    color: #1a1a2e;
+    color: #1c1917;
     padding: 16px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: #fafaf9;
+    border: 1px solid #e7e5e4;
     border-radius: 8px;
     display: inline-block;
     min-width: 400px;
@@ -39,7 +39,7 @@
     gap: 2px;
     margin-left: 10px;
     padding-left: 18px;
-    border-left: 2px solid #cbd5e1;
+    border-left: 2px solid #d6d3d1;
     margin-top: 4px;
     padding-bottom: 4px;
 }
@@ -101,35 +101,35 @@
     filter: brightness(0.87);
 }
 
-/* Group op: outlined style like DX's "And" button */
+/* Group op: violet */
 .fb-pill--group {
-    background: #ebf4ff;
-    color: #1a56db;
-    border-color: #93c5fd;
+    background: #f5f3ff;
+    color: #5b21b6;
+    border-color: #c4b5fd;
     font-weight: 600;
     min-width: 60px;
     justify-content: space-between;
 }
 
-/* Field: warm orange */
+/* Field: warm amber */
 .fb-pill--field {
-    background: #fff3ec;
-    color: #c2410c;
-    border-color: #fed7aa;
+    background: #fff7ed;
+    color: #9a3412;
+    border-color: #fdba74;
 }
 
-/* Operator: cool blue */
+/* Operator: neutral — deliberately understated */
 .fb-pill--operator {
-    background: #eff6ff;
-    color: #1d4ed8;
-    border-color: #bfdbfe;
+    background: #f9fafb;
+    color: #374151;
+    border-color: #9ca3af;
 }
 
-/* Value: teal/green */
+/* Value: teal */
 .fb-pill--value {
-    background: #f0fdf4;
-    color: #166534;
-    border-color: #bbf7d0;
+    background: #f0fdfa;
+    color: #0f766e;
+    border-color: #5eead4;
 }
 
 .fb-chevron {
@@ -143,7 +143,7 @@
 
 .fb-dropdown-panel {
     background: #fff;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #e7e5e4;
     border-radius: 6px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06);
     min-width: 150px;
@@ -163,23 +163,23 @@
     cursor: pointer;
     font-size: 13px;
     font-family: inherit;
-    color: #1a1a2e;
+    color: #1c1917;
     white-space: nowrap;
     transition: background 0.1s;
 }
 
 .fb-dropdown-item:hover {
-    background: #f1f5f9;
+    background: #f5f5f4;
 }
 
 .fb-dropdown-item--selected {
-    background: #eff6ff;
-    color: #1d4ed8;
+    background: #f5f3ff;
+    color: #5b21b6;
     font-weight: 600;
 }
 
 .fb-dropdown-item--selected:hover {
-    background: #dbeafe;
+    background: #ede9fe;
 }
 
 /* ── Menu icons (inside add dropdown) ───────────────────────────────────── */
@@ -191,11 +191,11 @@
 }
 
 .fb-menu-icon--condition {
-    color: #c2410c;
+    color: #9a3412;
 }
 
 .fb-menu-icon--group {
-    color: #1a56db;
+    color: #5b21b6;
 }
 
 /* ── Value input ─────────────────────────────────────────────────────────── */
@@ -207,26 +207,26 @@
 .fb-value-input {
     height: 28px;
     padding: 3px 10px;
-    border: 1px solid #bbf7d0;
+    border: 1px solid #5eead4;
     border-radius: 4px;
     font-size: 13px;
     font-family: inherit;
     outline: none;
-    background: #f0fdf4;
-    color: #166534;
+    background: #f0fdfa;
+    color: #0f766e;
     font-weight: 500;
     min-width: 90px;
     transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .fb-value-input::placeholder {
-    color: #86efac;
+    color: #99f6e4;
     font-weight: 400;
 }
 
 .fb-value-input:focus {
-    border-color: #4ade80;
-    box-shadow: 0 0 0 3px rgba(74,222,128,0.2);
+    border-color: #2dd4bf;
+    box-shadow: 0 0 0 3px rgba(45,212,191,0.15);
     background: #fff;
 }
 
@@ -260,26 +260,26 @@
 }
 
 .fb-btn--add {
-    background: #f8fafc;
-    color: #475569;
-    border-color: #cbd5e1;
+    background: #fafaf9;
+    color: #57534e;
+    border-color: #d6d3d1;
     font-weight: 500;
 }
 
 .fb-btn--add:hover {
-    background: #f1f5f9;
-    border-color: #94a3b8;
-    color: #1e293b;
+    background: #f5f5f4;
+    border-color: #a8a29e;
+    color: #1c1917;
 }
 
 .fb-btn--add svg {
     width: 13px;
     height: 13px;
-    color: #64748b;
+    color: #78716c;
 }
 
 .fb-btn--delete {
-    color: #94a3b8;
+    color: #a8a29e;
     padding: 4px 6px;
     border-radius: 4px;
 }
@@ -303,7 +303,7 @@
     display: inline-flex;
     align-items: center;
     cursor: grab;
-    color: #94a3b8;
+    color: #a8a29e;
     padding: 0 3px;
     user-select: none;
     flex-shrink: 0;
@@ -319,7 +319,7 @@
 }
 
 .fb-drag-handle:hover {
-    color: #475569;
+    color: #57534e;
 }
 
 /* Row being dragged — fade it out so you can see the ghost */
@@ -327,21 +327,21 @@
     opacity: 0.35;
 }
 
-/* Top-half hover: blue border above */
+/* Top-half hover: violet border above */
 .fb-drop-above {
-    box-shadow: 0 -2px 0 0 #3b82f6;
+    box-shadow: 0 -2px 0 0 #7c3aed;
 }
 
-/* Bottom-half hover: blue border below */
+/* Bottom-half hover: violet border below */
 .fb-drop-below {
-    box-shadow: 0 2px 0 0 #3b82f6;
+    box-shadow: 0 2px 0 0 #7c3aed;
 }
 
 /* Fixed indicator line that tracks the pointer during drag */
 .fb-drop-indicator {
     position: fixed;
     height: 2px;
-    background: #3b82f6;
+    background: #7c3aed;
     border-radius: 1px;
     pointer-events: none;
     z-index: 10000;
@@ -356,5 +356,5 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #3b82f6;
+    background: #7c3aed;
 }

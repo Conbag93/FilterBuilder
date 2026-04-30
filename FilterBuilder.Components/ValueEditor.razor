@@ -7,12 +7,12 @@
                       Value="@BoolVal"
                       Items="@_boolOptions"
                       Display="@(b => b ? "true" : "false")"
-                      CssClass="fb-pill--value"
+                      CssClass="@(Theme.ValuePillClass ?? "fb-pill--value")"
                       ValueChanged="@OnBoolChanged" />
     }
     else if (Kind == FactValueKind.Number)
     {
-        <input class="fb-value-input"
+        <input class="@(Theme.ValueInputClass ?? "fb-value-input")"
                type="number"
                value="@NumberVal"
                placeholder="Enter a value"
@@ -20,7 +20,7 @@
     }
     else
     {
-        <input class="fb-value-input"
+        <input class="@(Theme.ValueInputClass ?? "fb-value-input")"
                type="text"
                value="@TextVal"
                placeholder="Enter a value"
@@ -29,6 +29,8 @@
 </span>
 
 @code {
+    [CascadingParameter] public FilterBuilderTheme Theme { get; set; } = FilterBuilderTheme.Default;
+
     [Parameter, EditorRequired] public FactValueKind Kind { get; set; }
     [Parameter, EditorRequired] public FactValue? Value { get; set; }
     [Parameter, EditorRequired] public EventCallback<FactValue> ValueChanged { get; set; }
