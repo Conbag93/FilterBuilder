@@ -27,3 +27,7 @@ Thumbs.db
 # Local-only directories
 FilterBuilderDemo/
 decompiled/
+
+# Test / CI artifacts
+.playwright-mcp/
+*.png
