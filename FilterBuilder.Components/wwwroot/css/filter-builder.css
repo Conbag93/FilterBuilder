@@ -295,3 +295,66 @@
 .fb-group-children:has(> :first-child) {
     /* has children — keep the border */
 }
+
+/* ── Drag-and-drop ───────────────────────────────────────────────────────── */
+
+/* Drag handle icon shown at the start of each draggable row */
+.fb-drag-handle {
+    display: inline-flex;
+    align-items: center;
+    cursor: grab;
+    color: #94a3b8;
+    padding: 0 3px;
+    user-select: none;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.1s;
+    font-size: 13px;
+    line-height: 1;
+}
+
+.fb-node:hover .fb-drag-handle,
+.fb-group-header:hover .fb-drag-handle {
+    opacity: 1;
+}
+
+.fb-drag-handle:hover {
+    color: #475569;
+}
+
+/* Row being dragged — fade it out so you can see the ghost */
+.fb-row--dragging {
+    opacity: 0.35;
+}
+
+/* Top-half hover: blue border above */
+.fb-drop-above {
+    box-shadow: 0 -2px 0 0 #3b82f6;
+}
+
+/* Bottom-half hover: blue border below */
+.fb-drop-below {
+    box-shadow: 0 2px 0 0 #3b82f6;
+}
+
+/* Fixed indicator line that tracks the pointer during drag */
+.fb-drop-indicator {
+    position: fixed;
+    height: 2px;
+    background: #3b82f6;
+    border-radius: 1px;
+    pointer-events: none;
+    z-index: 10000;
+    display: none;
+}
+
+.fb-drop-indicator::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #3b82f6;
+}

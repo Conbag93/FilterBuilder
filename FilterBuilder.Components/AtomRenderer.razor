@@ -1,6 +1,21 @@
 @using static FilterBuilder.Components.ConditionExtensions
 
-<div class="fb-node fb-node--atom">
+<div class="fb-node fb-node--atom"
+     draggable="true"
+     data-fb-group-path="@GroupPathJson"
+     data-fb-index="@NodeIndex">
+
+    <span class="fb-drag-handle" title="Drag to reorder">
+        <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+            <circle cx="3" cy="2.5" r="1.5"/>
+            <circle cx="7" cy="2.5" r="1.5"/>
+            <circle cx="3" cy="7" r="1.5"/>
+            <circle cx="7" cy="7" r="1.5"/>
+            <circle cx="3" cy="11.5" r="1.5"/>
+            <circle cx="7" cy="11.5" r="1.5"/>
+        </svg>
+    </span>
+
     <PillDropdown TValue="string"
                   Value="@Node.Field"
                   Items="@FieldNames"
@@ -34,6 +49,14 @@
     [Parameter, EditorRequired] public IReadOnlyList<FieldDef> Fields { get; set; } = Array.Empty<FieldDef>();
     [Parameter, EditorRequired] public EventCallback<Condition> ConditionChanged { get; set; }
     [Parameter, EditorRequired] public EventCallback OnDelete { get; set; }
+
+    /// Path to the group that directly contains this atom.
+    [Parameter] public int[] GroupPath { get; set; } = Array.Empty<int>();
+
+    /// Index of this atom within its containing group.
+    [Parameter] public int NodeIndex { get; set; } = -1;
+
+    private string GroupPathJson => "[" + string.Join(",", GroupPath) + "]";
 
     private IReadOnlyList<string> FieldNames => Fields.Select(f => f.Name).ToArray();
     private FieldDef? CurrentField => Fields.FirstOrDefault(f => f.Name == Node.Field);

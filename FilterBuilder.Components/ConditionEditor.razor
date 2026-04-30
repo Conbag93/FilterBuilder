@@ -1,9 +1,12 @@
 @namespace FilterBuilder.Components
+@inject IJSRuntime JS
+@implements IDisposable
 
-<div class="fb-root">
+<div class="fb-root" @ref="_containerRef">
     <GroupNodeRenderer Node="@Condition"
                        Fields="@Fields"
                        IsRoot="true"
+                       Path="@(Array.Empty<int>())"
                        ConditionChanged="@(c => ConditionChanged.InvokeAsync(c))"
                        OnDelete="EventCallback.Empty" />
 </div>
@@ -12,4 +15,26 @@
     [Parameter, EditorRequired] public Condition Condition { get; set; } = new Condition.All(Array.Empty<Condition>());
     [Parameter, EditorRequired] public IReadOnlyList<FieldDef> Fields { get; set; } = Array.Empty<FieldDef>();
     [Parameter] public EventCallback<Condition> ConditionChanged { get; set; }
+
+    private ElementReference _containerRef;
+    private DotNetObjectReference<ConditionEditor>? _dotnetRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotnetRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("FilterBuilder.initDrag", _containerRef, _dotnetRef);
+        }
+    }
+
+    [JSInvokable]
+    public Task OnDrop(int[] srcGroupPath, int srcIndex, int[] dstGroupPath, int dstIndex, bool above)
+    {
+        var newRoot = DragDropMutations.MoveNode(Condition, srcGroupPath, srcIndex, dstGroupPath, dstIndex, above);
+        if (ReferenceEquals(newRoot, Condition)) return Task.CompletedTask;
+        return ConditionChanged.InvokeAsync(newRoot);
+    }
+
+    public void Dispose() => _dotnetRef?.Dispose();
 }

@@ -2,7 +2,26 @@
 @inject IJSRuntime JS
 
 <div class="fb-group @(IsRoot ? "fb-group--root" : "")">
-    <div class="fb-group-header">
+    @* Group header — draggable for non-root groups *@
+    <div class="fb-group-header"
+         draggable="@(IsRoot ? "false" : "true")"
+         data-fb-group-path="@ParentGroupPathJson"
+         data-fb-index="@NodeIndex">
+
+        @if (!IsRoot)
+        {
+            <span class="fb-drag-handle" title="Drag to reorder">
+                <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+                    <circle cx="3" cy="2.5" r="1.5"/>
+                    <circle cx="7" cy="2.5" r="1.5"/>
+                    <circle cx="3" cy="7" r="1.5"/>
+                    <circle cx="7" cy="7" r="1.5"/>
+                    <circle cx="3" cy="11.5" r="1.5"/>
+                    <circle cx="7" cy="11.5" r="1.5"/>
+                </svg>
+            </span>
+        }
+
         @* Group operator pill *@
         <PillDropdown TValue="string"
                       Value="@Node.GroupLabel()"
@@ -63,6 +82,8 @@
                 {
                     <AtomRenderer Node="@atom"
                                   Fields="@Fields"
+                                  GroupPath="@Path"
+                                  NodeIndex="@idx"
                                   ConditionChanged="@(c => OnChildChanged(idx, c))"
                                   OnDelete="@(() => OnChildDeleted(idx))" />
                 }
@@ -71,6 +92,9 @@
                     <GroupNodeRenderer Node="@child"
                                        Fields="@Fields"
                                        IsRoot="false"
+                                       Path="@(Path.Concat(new[] { idx }).ToArray())"
+                                       NodeIndex="@idx"
+                                       ParentGroupPath="@Path"
                                        ConditionChanged="@(c => OnChildChanged(idx, c))"
                                        OnDelete="@(() => OnChildDeleted(idx))" />
                 }
@@ -85,6 +109,17 @@
     [Parameter, EditorRequired] public EventCallback<Condition> ConditionChanged { get; set; }
     [Parameter, EditorRequired] public EventCallback OnDelete { get; set; }
     [Parameter] public bool IsRoot { get; set; } = false;
+
+    /// Path from root to THIS group node (e.g. [2] means root.Children[2] is this group).
+    [Parameter] public int[] Path { get; set; } = Array.Empty<int>();
+
+    /// Index of this group within its parent (used for data-fb-index on the header).
+    [Parameter] public int NodeIndex { get; set; } = -1;
+
+    /// Path to the parent group — data-fb-group-path on the header.
+    [Parameter] public int[] ParentGroupPath { get; set; } = Array.Empty<int>();
+
+    private string ParentGroupPathJson => "[" + string.Join(",", ParentGroupPath) + "]";
 
     private static readonly IReadOnlyList<string> _groupOps = new[] { "AND", "OR", "NOT" };
     private bool _addOpen;

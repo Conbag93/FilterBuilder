@@ -21,6 +21,9 @@ packages/
 .DS_Store
 Thumbs.db
 
+# Vendor libs (restored from CDN)
+**/wwwroot/lib/
+
 # Local-only directories
 FilterBuilderDemo/
 decompiled/
